@@ -2,15 +2,15 @@ import sqlite3
 import json
 from datetime import datetime
 
-timeframe = '2007-03'
+timeframe = '2009-05'
 sql_transaction = []
 
 connection = sqlite3.connect('{}.db'.format(timeframe))
 c = connection.cursor()
 
-def create_table():
-	c.execute(""" CREATE TABLE IF NOT EXISTS parent_reply(parent_id TEXT PRIMARY KEY, 
-				comment_id TEXT UNIQUE, parent TEXT, comment TEXT, subreddit TEXT, unix INT, score INT) """)
+#def create_table():
+	#c.execute(""" CREATE TABLE IF NOT EXISTS parent_reply(parent_id TEXT PRIMARY KEY, 
+				#comment_id TEXT UNIQUE, parent TEXT, comment TEXT, subreddit TEXT, unix INT, score INT) """)
 
 def format_data(data):
 		data = data.replace("\n", " newlinechar ").replace("\r", " newlinechar ").replace('"', "'")
@@ -18,7 +18,7 @@ def format_data(data):
 
 def find_parent(pid):
 	try:
-		sql = "SELECT comment FROM parent_reply WHERE comment_id = '{}' LIMIT 1"
+		sql = "SELECT comment FROM parent_reply WHERE comment_id = '{}' LIMIT 1".format(pid)
 		c.execute(sql)
 		result = c.fetchone()
 		if result != None:
@@ -29,7 +29,7 @@ def find_parent(pid):
 
 def find_existing_score(pid):
 	try:
-		sql = "SELECT score FROM parent_reply WHERE parent_id = '{}' LIMIT 1"
+		sql = "SELECT score FROM parent_reply WHERE parent_id = '{}' LIMIT 1".format(pid)
 		c.execute(sql)
 		result = c.fetchone()
 		if result != None:
@@ -43,7 +43,7 @@ def acceptable(data):
 		return False
 	elif(len(data)>1000):
 		return False
-	elif data == ['deleted'] or data == ['removed']:
+	elif data == '[deleted]' or data == '[removed]':
 		return False
 	else:
 		return True
@@ -53,14 +53,14 @@ def sql_insert_replace_comment(commentid,parentid,parent,comment,subreddit,time,
         sql = """UPDATE parent_reply SET parent_id = ?, comment_id = ?, parent = ?, comment = ?, subreddit = ?, unix = ?, score = ? WHERE parent_id =?;""".format(parentid, commentid, parent, comment, subreddit, int(time), score, parentid)
         transaction_bldr(sql)
     except Exception as e:
-        print('s0 insertion',str(e))
+        print('s-UPDATE insertion',str(e))
 
 def sql_insert_has_parent(commentid,parentid,parent,comment,subreddit,time,score):
     try:
         sql = """INSERT INTO parent_reply (parent_id, comment_id, parent, comment, subreddit, unix, score) VALUES ("{}","{}","{}","{}","{}",{},{});""".format(parentid, commentid, parent, comment, subreddit, int(time), score)
         transaction_bldr(sql)
     except Exception as e:
-        print('s0 insertion',str(e))
+        print('s-PARENT insertion',str(e))
 
 
 def sql_insert_no_parent(commentid,parentid,comment,subreddit,time,score):
@@ -68,7 +68,7 @@ def sql_insert_no_parent(commentid,parentid,comment,subreddit,time,score):
         sql = """INSERT INTO parent_reply (parent_id, comment_id, comment, subreddit, unix, score) VALUES ("{}","{}","{}","{}",{},{});""".format(parentid, commentid, comment, subreddit, int(time), score)
         transaction_bldr(sql)
     except Exception as e:
-        print('s0 insertion',str(e))
+        print('s-NO_PARENT insertion',str(e))
 
 def transaction_bldr(sql):
     global sql_transaction
@@ -84,11 +84,11 @@ def transaction_bldr(sql):
         sql_transaction = []
 
 if __name__ == '__main__':
-	create_table()
+	#create_table()
 	row_counter = 0
 	paired_rows = 0
 
-	with open('D:\git\Deep_learning_ChatBot_with_tensorflow\RC_2007-03', buffering=1000) as f:
+	with open('D:\git\Deep_learning_ChatBot_with_tensorflow\RC_2009-07', buffering=1000) as f:
 		for row in f:
 			row_counter += 1
 			row = json.loads(row)
@@ -97,7 +97,7 @@ if __name__ == '__main__':
 			created_utc = row['created_utc']
 			score = row['score']
 			subreddit = row['subreddit']
-			comment_id = row['id']
+			comment_id = row['name'] 
 
 			parent_data = find_parent(parent_id)
 

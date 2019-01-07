@@ -1,7 +1,7 @@
 import sqlite3
 import pandas as pd
 
-timeframes = ['2007-03']
+timeframes = ['2009-05']
 
 for timeframe in timeframes:
 	connection = sqlite3.connect('{}.db'.format(timeframe))
@@ -14,7 +14,7 @@ for timeframe in timeframes:
 
 	while cur_length == limit:
 		df = pd.read_sql("SELECT * FROM parent_reply WHERE unix > {} AND parent NOT NULL AND score > 0 ORDER BY unix Asc LIMIT {}".format(last_unix, limit), connection)
-		#last_unix = df.tail(1)['unix'].values[0]
+		last_unix = df.tail(1)['unix'].values[0]
 		cur_length = len(df)
 		if not test_done:
 			with open("test.from", "a", encoding='utf8') as f:
